@@ -1,0 +1,61 @@
+{
+  "name": "serie-downloader",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "electron:dev": "concurrently \"npm run dev\" \"wait-on http://localhost:5173 && electron .\"",
+    "build": "tsc && vite build",
+    "electron:build": "npm run build && electron-builder",
+    "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@tailwindcss/vite": "^4.1.13",
+    "axios": "^1.11.0",
+    "axois": "^0.0.1-security",
+    "better-sqlite3": "^12.2.0",
+    "electron-store": "^10.1.0",
+    "framer-motion": "^12.23.12",
+    "lucide-react": "^0.544.0",
+    "progress-stream": "^2.0.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-query": "^3.39.3",
+    "sanitize-filename": "^1.6.3",
+    "sqlite3": "^5.1.7",
+    "tailwindcss": "^4.1.13",
+    "vite-plugin-electron": "^0.29.0",
+    "zustand": "^5.0.8"
+  },
+  "devDependencies": {
+    "@types/react": "^18.2.64",
+    "@types/react-dom": "^18.2.21",
+    "@typescript-eslint/eslint-plugin": "^7.1.1",
+    "@typescript-eslint/parser": "^7.1.1",
+    "@vitejs/plugin-react": "^4.2.1",
+    "concurrently": "^8.2.2",
+    "electron": "^30.0.1",
+    "electron-builder": "^24.13.3",
+    "eslint": "^8.57.0",
+    "eslint-plugin-react-hooks": "^4.6.0",
+    "eslint-plugin-react-refresh": "^0.4.5",
+    "typescript": "^5.2.2",
+    "vite": "^5.1.6",
+    "vite-plugin-electron-renderer": "^0.14.6",
+    "wait-on": "^7.2.0"
+  },
+  "main": "dist-electron/main.js",
+  "build": {
+    "appId": "com.yourcompany.serie-downloader",
+    "productName": "Serie Downloader",
+    "directories": {
+      "output": "dist-electron"
+    },
+    "files": [
+      "dist/**/*",
+      "electron/**/*"
+    ]
+  }
+}
