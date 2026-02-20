@@ -5,6 +5,7 @@ import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
 import renderer from "vite-plugin-electron-renderer";
 
+
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [
@@ -13,6 +14,15 @@ export default defineConfig({
       main: {
         // Shortcut of `build.lib.entry`.
         entry: "electron/main.ts",
+        vite: {
+          build: {
+            rollupOptions: {
+              // This tells Vite: "Don't bundle better-sqlite3, 
+              // Electron will find it in node_modules at runtime"
+              external: ['better-sqlite3'],
+            },
+          },
+        },
       },
       preload: {
         // Shortcut of `build.rollupOptions.input`.

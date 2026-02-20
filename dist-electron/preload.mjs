@@ -16,9 +16,9 @@ const electronAPI = {
     }
   },
   // Start download function using invoke for async response
-  startDownload: async (url, savePath) => {
+  startDownload: async (url, savePath, metadata) => {
     try {
-      const result = await electron.ipcRenderer.invoke("start-download", { url, savePath });
+      const result = await electron.ipcRenderer.invoke("start-download", { url, savePath, metadata });
       return result;
     } catch (error) {
       console.error("Failed to start download:", error);
@@ -27,6 +27,23 @@ const electronAPI = {
         error: error instanceof Error ? error.message : "Unknown error"
       };
     }
+  },
+  // Database bridge
+  getHistory: async () => {
+    return await electron.ipcRenderer.invoke("get-download-history");
+  },
+  saveRecord: async (record) => {
+    return await electron.ipcRenderer.invoke("save-download-record", record);
+  },
+  // Settings bridge
+  getSettings: async () => {
+    return await electron.ipcRenderer.invoke("get-settings");
+  },
+  updateSettings: async (key, value) => {
+    await electron.ipcRenderer.invoke("set-setting", { key, value });
+  },
+  selectDirectory: async () => {
+    return await electron.ipcRenderer.invoke("select-directory");
   },
   // Progress listener with automatic cleanup
   onDownloadProgress: (callback) => {

@@ -3,13 +3,25 @@ import { contextBridge, ipcRenderer, IpcRendererEvent } from "electron";
 // Define the API interface for type safety
 export interface ElectronAPI {
   // Download functions
-  startDownload: (url: string, savePath: string) => Promise<{ success: boolean; message?: string; error?: string }>;
+  startDownload: (url: string, savePath: string, metadata?: any) => Promise<{ success: boolean; message?: string; error?: string }>;
   
   // Progress listeners
   onDownloadProgress: (callback: (data: { url: string; progress: number; savePath: string }) => void) => () => void;
-  onDownloadComplete: (callback: (data: { url: string; savePath: string; success: boolean }) => void) => () => void;
+  onDownloadComplete: (callback: (data: { url: string; savePath: string; success: boolean; metadata: any }) => void) => () => void;
   onDownloadError: (callback: (data: { url: string; savePath: string; error: string }) => void) => () => void;
   
+  // Database functions
+  getHistory: () => Promise<any[]>;
+  saveRecord: (record: any) => Promise<{ success: boolean; error?: string }>;
+
+  // Settings & Configuration
+  getSettings: () => Promise<any>;
+  updateSettings: (key: string, value: any) => Promise<void>;
+  selectDirectory: () => Promise<string | null>;
+
+  // Dialogs
+  showSaveDialog: (options?: { defaultPath?: string }) => Promise<{ canceled: boolean; filePath: string | null; error?: string }>;
+
   // Utility function to remove all download listeners
   removeAllDownloadListeners: () => void;
 }
@@ -32,9 +44,9 @@ const electronAPI: ElectronAPI = {
   },
 
   // Start download function using invoke for async response
-  startDownload: async (url: string, savePath: string) => {
+  startDownload: async (url: string, savePath: string, metadata?: any) => {
     try {
-      const result = await ipcRenderer.invoke("start-download", { url, savePath });
+      const result = await ipcRenderer.invoke("start-download", { url, savePath, metadata });
       return result;
     } catch (error) {
       console.error("Failed to start download:", error);
@@ -43,6 +55,28 @@ const electronAPI: ElectronAPI = {
         error: error instanceof Error ? error.message : "Unknown error" 
       };
     }
+  },
+
+  // Database bridge
+  getHistory: async () => {
+    return await ipcRenderer.invoke("get-download-history");
+  },
+
+  saveRecord: async (record: any) => {
+    return await ipcRenderer.invoke("save-download-record", record);
+  },
+
+  // Settings bridge
+  getSettings: async () => {
+    return await ipcRenderer.invoke("get-settings");
+  },
+
+  updateSettings: async (key: string, value: any) => {
+    await ipcRenderer.invoke("set-setting", { key, value });
+  },
+
+  selectDirectory: async () => {
+    return await ipcRenderer.invoke("select-directory");
   },
 
   // Progress listener with automatic cleanup
@@ -60,8 +94,8 @@ const electronAPI: ElectronAPI = {
   },
 
   // Complete listener with automatic cleanup
-  onDownloadComplete: (callback: (data: { url: string; savePath: string; success: boolean }) => void) => {
-    const wrappedCallback = (_event: IpcRendererEvent, data: { url: string; savePath: string; success: boolean }) => {
+  onDownloadComplete: (callback: (data: { url: string; savePath: string; success: boolean; metadata: any }) => void) => {
+    const wrappedCallback = (_event: IpcRendererEvent, data: { url: string; savePath: string; success: boolean; metadata: any }) => {
       callback(data);
     };
     
@@ -97,6 +131,3 @@ const electronAPI: ElectronAPI = {
 
 // Expose the API to the renderer process
 contextBridge.exposeInMainWorld("electronAPI", electronAPI);
-
-// Export the type for use in renderer TypeScript files
-export type { ElectronAPI };
