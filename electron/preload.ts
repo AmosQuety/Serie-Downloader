@@ -10,6 +10,10 @@ export interface ElectronAPI {
   onDownloadComplete: (callback: (data: { url: string; savePath: string; success: boolean; metadata: any }) => void) => () => void;
   onDownloadError: (callback: (data: { url: string; savePath: string; error: string }) => void) => () => void;
   
+  // Download controls
+  pauseDownload: (url: string) => Promise<{ success: boolean; error?: string }>;
+  cancelDownload: (url: string) => Promise<{ success: boolean; error?: string }>;
+
   // Database functions
   getHistory: () => Promise<any[]>;
   saveRecord: (record: any) => Promise<{ success: boolean; error?: string }>;
@@ -24,6 +28,26 @@ export interface ElectronAPI {
 
   // Utility function to remove all download listeners
   removeAllDownloadListeners: () => void;
+
+  // Bulk Database insertion
+  bulkInsertEpisodes: (data: { series: any, episodes: any[], sourceId: string }) => Promise<{ success: boolean; error?: string }>;
+
+  // Throttling
+  setMaxSpeed: (speed: number) => Promise<void>;
+
+  // Source Search & Metadata
+  searchSources: (query: string) => Promise<any[]>;
+  getSeasonLinks: (sourceId: string, seriesId: string) => Promise<any[]>;
+  getEpisodes: (sourceId: string, seriesId: string, seasonNumber: number) => Promise<any[]>;
+  getSourceDownloadUrl: (sourceId: string, episodeId: string) => Promise<string>;
+
+  // Playback
+  playFile: (filePath: string) => Promise<{ success: boolean; error?: string }>;
+  getPlaybackPosition: (filePath: string) => Promise<number>;
+  updatePlaybackPosition: (data: { filePath: string, position: number, duration: number }) => Promise<{ success: boolean }>;
+
+  // Updates
+  onUpdateReady: (callback: (info: any) => void) => () => void;
 }
 
 // Create the API object
@@ -126,6 +150,63 @@ const electronAPI: ElectronAPI = {
     ipcRenderer.removeAllListeners("download-progress");
     ipcRenderer.removeAllListeners("download-complete");
     ipcRenderer.removeAllListeners("download-error");
+  },
+
+  cancelDownload: async (url: string) => {
+    return await ipcRenderer.invoke("cancel-download", { url });
+  },
+
+  pauseDownload: async (url: string) => {
+    return await ipcRenderer.invoke("pause-download", { url });
+  },
+
+  bulkInsertEpisodes: async (data: { series: any, episodes: any[], sourceId: string }) => {
+    return await ipcRenderer.invoke("bulk-insert-episodes", data);
+  },
+
+  setMaxSpeed: async (speed: number) => {
+    await ipcRenderer.invoke("set-max-speed", speed);
+  },
+
+  searchSources: async (query: string) => {
+    return await ipcRenderer.invoke("search-sources", query);
+  },
+
+  getSeasonLinks: async (sourceId: string, seriesId: string) => {
+    return await ipcRenderer.invoke("get-season-links", { sourceId, seriesId });
+  },
+
+  getEpisodes: async (sourceId: string, seriesId: string, seasonNumber: number) => {
+    return await ipcRenderer.invoke("get-episodes", { sourceId, seriesId, seasonNumber });
+  },
+
+  getSourceDownloadUrl: async (sourceId: string, episodeId: string) => {
+    return await ipcRenderer.invoke("get-source-download-url", { sourceId, episodeId });
+  },
+
+  // Playback bridge
+  playFile: async (filePath: string) => {
+    return await ipcRenderer.invoke("play-file", filePath);
+  },
+
+  getPlaybackPosition: async (filePath: string) => {
+    return await ipcRenderer.invoke("get-playback-position", filePath);
+  },
+
+  updatePlaybackPosition: async (data: { filePath: string, position: number, duration: number }) => {
+    return await ipcRenderer.invoke("update-playback-position", data);
+  },
+
+  onUpdateReady: (callback: (info: any) => void) => {
+    const wrappedCallback = (_event: IpcRendererEvent, info: any) => {
+      callback(info);
+    };
+    ipcRenderer.on("update-ready", wrappedCallback);
+    
+    // Return cleanup function
+    return () => {
+      ipcRenderer.removeListener("update-ready", wrappedCallback);
+    };
   }
 };
 

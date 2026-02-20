@@ -11,6 +11,7 @@ export class PublicDomainSource implements IContentSource {
     const results: SeriesMetadata[] = [
       {
         id: "pd-1",
+        sourceId: "pd-archive",
         title: "The Great Space Journey",
         description: "An epic adventure through the cosmos, discovering new worlds and civilizations.",
         thumbnail: "https://images.unsplash.com/photo-1446776811953-b23d57bd21aa?w=800&q=80",
@@ -22,6 +23,7 @@ export class PublicDomainSource implements IContentSource {
       },
       {
         id: "pd-2",
+        sourceId: "pd-archive",
         title: "Cyber Chronicles",
         description: "In a world of neon and silicon, one hacker stands against the mega-corps.",
         thumbnail: "https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=800&q=80",
@@ -32,6 +34,7 @@ export class PublicDomainSource implements IContentSource {
       },
       {
         id: "pd-3",
+        sourceId: "pd-archive",
         title: "Mystery Manor",
         description: "Dark secrets hidden in the shadows of an ancient Victorian estate.",
         thumbnail: "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=800&q=80",
@@ -56,6 +59,7 @@ export class PublicDomainSource implements IContentSource {
         ...s,
         episodes: Array.from({ length: s.number === 1 ? 5 : 3 }, (_, i) => ({
           id: `${id}-s${s.number}-e${i + 1}`,
+          sourceId: "pd-archive",
           title: `Episode ${i + 1}: The Discovery`,
           number: i + 1,
           season: s.number,

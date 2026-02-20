@@ -152,6 +152,8 @@ electron-packager/
 # Electron Builder
 app-builds/
 dist_electron/
+dist-electron/
+release/
 
 # OS generated files
 .DS_Store

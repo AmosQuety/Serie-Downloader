@@ -2,14 +2,20 @@ import React, { useState, useEffect } from "react";
 import { Folder, Save, Undo, CheckCircle, Info } from "lucide-react";
 
 export const SettingsView: React.FC = () => {
-  const [settings, setSettings] = useState<{ downloadPath: string }>({ downloadPath: "" });
+  const [settings, setSettings] = useState<{ downloadPath: string, maxSpeed: number }>({ 
+    downloadPath: "", 
+    maxSpeed: 0 // 0 = unlimited
+  });
   const [isSaved, setIsSaved] = useState(false);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchSettings = async () => {
       const currentSettings = await window.electronAPI.getSettings();
-      setSettings(currentSettings);
+      setSettings({
+        downloadPath: currentSettings.downloadPath || "",
+        maxSpeed: currentSettings.maxSpeed || 0
+      });
       setLoading(false);
     };
     fetchSettings();
@@ -25,6 +31,8 @@ export const SettingsView: React.FC = () => {
 
   const handleSave = async () => {
     await window.electronAPI.updateSettings("downloadPath", settings.downloadPath);
+    await window.electronAPI.updateSettings("maxSpeed", settings.maxSpeed);
+    await (window.electronAPI as any).setMaxSpeed(settings.maxSpeed);
     setIsSaved(true);
     setTimeout(() => setIsSaved(false), 3000);
   };
@@ -36,6 +44,12 @@ export const SettingsView: React.FC = () => {
       </div>
     );
   }
+
+  const formatSpeed = (kbps: number) => {
+    if (kbps === 0) return "Unlimited";
+    if (kbps < 1024) return `${kbps} KB/s`;
+    return `${(kbps / 1024).toFixed(1)} MB/s`;
+  };
 
   return (
     <div className="p-6 max-w-4xl mx-auto animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -76,6 +90,42 @@ export const SettingsView: React.FC = () => {
               <span className="font-bold"> [Series Title]/Season [XX]/[Episode Title]</span> subfolders 
               within this directory.
             </p>
+          </div>
+        </section>
+
+        {/* Throttling Section */}
+        <section className="bg-white rounded-3xl p-8 shadow-sm border border-gray-100">
+          <div className="flex items-start gap-4 mb-6">
+            <div className="bg-purple-50 p-3 rounded-2xl">
+              <div className="w-6 h-6 text-purple-600">⚡</div>
+            </div>
+            <div className="flex-1">
+              <h2 className="text-xl font-bold text-gray-900">Bandwidth Control</h2>
+              <p className="text-gray-500 text-sm">Limit the maximum download speed</p>
+            </div>
+            <div className="text-xl font-black text-purple-600 font-mono">
+              {formatSpeed(settings.maxSpeed)}
+            </div>
+          </div>
+
+          <div className="space-y-6">
+            <input 
+              type="range"
+              min="0"
+              max="10240"
+              step="512"
+              value={settings.maxSpeed}
+              onChange={(e) => {
+                setSettings({...settings, maxSpeed: parseInt(e.target.value)});
+                setIsSaved(false);
+              }}
+              className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-purple-600"
+            />
+            <div className="flex justify-between text-[10px] text-gray-400 font-bold uppercase tracking-widest">
+              <span>Unlimited</span>
+              <span>5 MB/s</span>
+              <span>10 MB/s</span>
+            </div>
           </div>
         </section>
 

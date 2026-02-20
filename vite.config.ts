@@ -17,9 +17,16 @@ export default defineConfig({
         vite: {
           build: {
             rollupOptions: {
-              // This tells Vite: "Don't bundle better-sqlite3, 
-              // Electron will find it in node_modules at runtime"
-              external: ['better-sqlite3'],
+              // Tell Vite which modules to exclude from the bundle
+              external: [
+                'better-sqlite3',
+                'playwright',
+                'playwright-core',
+                'axios',
+                'fs-extra',
+                'sanitize-filename',
+                'cheerio'
+              ],
             },
           },
         },

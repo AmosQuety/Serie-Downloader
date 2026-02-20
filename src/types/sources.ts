@@ -5,6 +5,7 @@ export interface SeriesMetadata {
   thumbnail?: string;
   rating?: string;
   seasons: SeasonMetadata[];
+  sourceId: string;
 }
 
 export interface SeasonMetadata {
@@ -22,6 +23,7 @@ export interface EpisodeMetadata {
   description?: string;
   rating?: string;
   fileSize?: number;
+  sourceId: string;
 }
 
 export interface IContentSource {

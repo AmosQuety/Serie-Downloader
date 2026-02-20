@@ -1,13 +1,30 @@
 import React from "react";
-import { useNavigate, Link, useLocation } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { Search, List, Library, Settings } from "lucide-react";
+import { useDownloadStore } from "../store/useDownloadStore";
 
 export const Navbar: React.FC = () => {
   const location = useLocation();
+  const downloads = useDownloadStore((state) => state.downloads);
+  
+  const activeDownloads = downloads.filter(d => d.status === 'downloading' || d.status === 'pending').length;
 
   const navItems = [
     { path: "/", label: "Search", icon: <Search size={20} /> },
-    { path: "/queue", label: "Queue", icon: <List size={20} /> },
+    { 
+      path: "/queue", 
+      label: "Queue", 
+      icon: (
+        <div className="relative">
+          <List size={20} />
+          {activeDownloads > 0 && (
+            <span className="absolute -top-2 -right-2 bg-blue-500 text-white text-[10px] w-4 h-4 flex items-center justify-center rounded-full border-2 border-white animate-pulse">
+              {activeDownloads}
+            </span>
+          )}
+        </div>
+      ) 
+    },
     { path: "/library", label: "Library", icon: <Library size={20} /> },
     { path: "/settings", label: "Settings", icon: <Settings size={20} /> },
   ];

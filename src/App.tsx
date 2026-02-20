@@ -45,8 +45,27 @@ const AppContent: React.FC = () => {
     window.electronAPI.onDownloadComplete(handleComplete);
     window.electronAPI.onDownloadError(handleError);
 
+    const cleanupUpdate = window.electronAPI.onUpdateReady((info) => {
+      showToast(`A new version (${info.version}) is ready to install!`, "success");
+    });
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Ctrl+F or Cmd+F
+      if ((e.ctrlKey || e.metaKey) && e.key === 'f') {
+        e.preventDefault();
+        window.location.hash = "#/";
+        setTimeout(() => {
+          document.getElementById('main-search-input')?.focus();
+        }, 100);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+
     return () => {
       window.electronAPI.removeAllDownloadListeners();
+      cleanupUpdate();
+      window.removeEventListener('keydown', handleKeyDown);
     };
   }, [updateDownload, showToast]);
 

@@ -3,12 +3,15 @@ export interface DownloadItem {
   url: string;
   savePath: string;
   progress: number;
-  status: 'pending' | 'downloading' | 'completed' | 'error';
+  status: 'pending' | 'downloading' | 'completed' | 'error' | 'paused';
   error?: string;
+  backdrop?: string;
+  genres?: string[];
   metadata?: {
     title?: string;
     season?: number;
     episode?: number;
+    episodeTitle?: string;
   };
 }
 
