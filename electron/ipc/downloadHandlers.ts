@@ -43,10 +43,20 @@ export function registerDownloadHandlers({ getWindow, db, downloadManager }: Ipc
         });
       }
 
-      // Save to database on success
+      // Save to database on success. Upsert rather than INSERT OR REPLACE:
+      // this row may already carry thumbnail/description/rating/source_id
+      // set elsewhere (e.g. save-download-record); a plain REPLACE would
+      // delete and re-insert the row, wiping any column not listed here.
       db.prepare(`
-        INSERT OR REPLACE INTO download_history (url, save_path, status, progress, title, season, episode)
+        INSERT INTO download_history (url, save_path, status, progress, title, season, episode)
         VALUES (?, ?, ?, ?, ?, ?, ?)
+        ON CONFLICT(url) DO UPDATE SET
+          save_path = excluded.save_path,
+          status = excluded.status,
+          progress = excluded.progress,
+          title = COALESCE(excluded.title, download_history.title),
+          season = COALESCE(excluded.season, download_history.season),
+          episode = COALESCE(excluded.episode, download_history.episode)
       `).run(
         url,
         finalSavePath,
