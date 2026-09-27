@@ -1,26 +1,35 @@
 import { contextBridge, ipcRenderer, IpcRendererEvent } from "electron";
+import type { PathMetadata } from "./pathUtils";
+import type {
+  DownloadCompleteMetadata,
+  DownloadRecord,
+  DownloadHistoryItem,
+  AppSettings,
+  UpdateReadyInfo,
+} from "../src/types";
+import type { SeriesMetadata, EpisodeMetadata } from "../src/types/sources";
 
 // Define the API interface for type safety
 export interface ElectronAPI {
   // Download functions
-  startDownload: (url: string, savePath: string, metadata?: any) => Promise<{ success: boolean; message?: string; error?: string }>;
-  
+  startDownload: (url: string, savePath: string, metadata?: PathMetadata) => Promise<{ success: boolean; message?: string; error?: string }>;
+
   // Progress listeners
   onDownloadProgress: (callback: (data: { url: string; progress: number; savePath: string }) => void) => () => void;
-  onDownloadComplete: (callback: (data: { url: string; savePath: string; success: boolean; metadata: any }) => void) => () => void;
+  onDownloadComplete: (callback: (data: { url: string; savePath: string; success: boolean; metadata: DownloadCompleteMetadata }) => void) => () => void;
   onDownloadError: (callback: (data: { url: string; savePath: string; error: string }) => void) => () => void;
-  
+
   // Download controls
   pauseDownload: (url: string) => Promise<{ success: boolean; error?: string }>;
   cancelDownload: (url: string) => Promise<{ success: boolean; error?: string }>;
 
   // Database functions
-  getHistory: () => Promise<any[]>;
-  saveRecord: (record: any) => Promise<{ success: boolean; error?: string }>;
+  getHistory: () => Promise<DownloadHistoryItem[]>;
+  saveRecord: (record: DownloadRecord) => Promise<{ success: boolean; error?: string }>;
 
   // Settings & Configuration
-  getSettings: () => Promise<any>;
-  updateSettings: (key: string, value: any) => Promise<void>;
+  getSettings: () => Promise<AppSettings>;
+  updateSettings: (key: keyof AppSettings, value: string | number) => Promise<void>;
   selectDirectory: () => Promise<string | null>;
 
   // Dialogs
@@ -30,15 +39,15 @@ export interface ElectronAPI {
   removeAllDownloadListeners: () => void;
 
   // Bulk Database insertion
-  bulkInsertEpisodes: (data: { series: any, episodes: any[], sourceId: string }) => Promise<{ success: boolean; error?: string }>;
+  bulkInsertEpisodes: (data: { series: SeriesMetadata, episodes: EpisodeMetadata[], sourceId: string }) => Promise<{ success: boolean; error?: string }>;
 
   // Throttling
   setMaxSpeed: (speed: number) => Promise<void>;
 
   // Source Search & Metadata
-  searchSources: (query: string) => Promise<any[]>;
-  getSeasonLinks: (sourceId: string, seriesId: string) => Promise<any[]>;
-  getEpisodes: (sourceId: string, seriesId: string, seasonNumber: number) => Promise<any[]>;
+  searchSources: (query: string) => Promise<{ sourceId: string; results: SeriesMetadata[] }[]>;
+  getSeasonLinks: (sourceId: string, seriesId: string) => Promise<{ number: number; url: string }[]>;
+  getEpisodes: (sourceId: string, seriesId: string, seasonNumber: number) => Promise<EpisodeMetadata[]>;
   getSourceDownloadUrl: (sourceId: string, episodeId: string) => Promise<string>;
 
   // Playback
@@ -47,7 +56,7 @@ export interface ElectronAPI {
   updatePlaybackPosition: (data: { filePath: string, position: number, duration: number }) => Promise<{ success: boolean }>;
 
   // Updates
-  onUpdateReady: (callback: (info: any) => void) => () => void;
+  onUpdateReady: (callback: (info: UpdateReadyInfo) => void) => () => void;
 }
 
 // Create the API object
@@ -68,7 +77,7 @@ const electronAPI: ElectronAPI = {
   },
 
   // Start download function using invoke for async response
-  startDownload: async (url: string, savePath: string, metadata?: any) => {
+  startDownload: async (url: string, savePath: string, metadata?: PathMetadata) => {
     try {
       const result = await ipcRenderer.invoke("start-download", { url, savePath, metadata });
       return result;
@@ -86,7 +95,7 @@ const electronAPI: ElectronAPI = {
     return await ipcRenderer.invoke("get-download-history");
   },
 
-  saveRecord: async (record: any) => {
+  saveRecord: async (record: DownloadRecord) => {
     return await ipcRenderer.invoke("save-download-record", record);
   },
 
@@ -95,7 +104,7 @@ const electronAPI: ElectronAPI = {
     return await ipcRenderer.invoke("get-settings");
   },
 
-  updateSettings: async (key: string, value: any) => {
+  updateSettings: async (key: keyof AppSettings, value: string | number) => {
     await ipcRenderer.invoke("set-setting", { key, value });
   },
 
@@ -118,8 +127,8 @@ const electronAPI: ElectronAPI = {
   },
 
   // Complete listener with automatic cleanup
-  onDownloadComplete: (callback: (data: { url: string; savePath: string; success: boolean; metadata: any }) => void) => {
-    const wrappedCallback = (_event: IpcRendererEvent, data: { url: string; savePath: string; success: boolean; metadata: any }) => {
+  onDownloadComplete: (callback: (data: { url: string; savePath: string; success: boolean; metadata: DownloadCompleteMetadata }) => void) => {
+    const wrappedCallback = (_event: IpcRendererEvent, data: { url: string; savePath: string; success: boolean; metadata: DownloadCompleteMetadata }) => {
       callback(data);
     };
     
@@ -160,7 +169,7 @@ const electronAPI: ElectronAPI = {
     return await ipcRenderer.invoke("pause-download", { url });
   },
 
-  bulkInsertEpisodes: async (data: { series: any, episodes: any[], sourceId: string }) => {
+  bulkInsertEpisodes: async (data: { series: SeriesMetadata, episodes: EpisodeMetadata[], sourceId: string }) => {
     return await ipcRenderer.invoke("bulk-insert-episodes", data);
   },
 
@@ -197,8 +206,8 @@ const electronAPI: ElectronAPI = {
     return await ipcRenderer.invoke("update-playback-position", data);
   },
 
-  onUpdateReady: (callback: (info: any) => void) => {
-    const wrappedCallback = (_event: IpcRendererEvent, info: any) => {
+  onUpdateReady: (callback: (info: UpdateReadyInfo) => void) => {
+    const wrappedCallback = (_event: IpcRendererEvent, info: UpdateReadyInfo) => {
       callback(info);
     };
     ipcRenderer.on("update-ready", wrappedCallback);

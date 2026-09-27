@@ -8,7 +8,7 @@ export function logInfo(message: string) {
   writeLog('INFO', message);
 }
 
-export function logError(message: string, error?: any) {
+export function logError(message: string, error?: unknown) {
   const errorMsg = error instanceof Error ? error.stack : JSON.stringify(error);
   writeLog('ERROR', `${message}${errorMsg ? ` - ${errorMsg}` : ''}`);
 }

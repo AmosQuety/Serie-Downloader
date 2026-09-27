@@ -32,7 +32,7 @@ export const SettingsView: React.FC = () => {
   const handleSave = async () => {
     await window.electronAPI.updateSettings("downloadPath", settings.downloadPath);
     await window.electronAPI.updateSettings("maxSpeed", settings.maxSpeed);
-    await (window.electronAPI as any).setMaxSpeed(settings.maxSpeed);
+    await window.electronAPI.setMaxSpeed(settings.maxSpeed);
     setIsSaved(true);
     setTimeout(() => setIsSaved(false), 3000);
   };

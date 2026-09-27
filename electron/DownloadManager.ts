@@ -5,12 +5,19 @@ import { Transform } from "stream";
 
 type ProgressCallback = (progress: number) => void;
 
+class AbortDownloadError extends Error {
+  constructor() {
+    super("AbortError");
+    this.name = "AbortError";
+  }
+}
+
 interface DownloadTask {
   url: string;
   savePath: string;
   onProgress?: ProgressCallback;
   resolve: () => void;
-  reject: (err: any) => void;
+  reject: (err: unknown) => void;
   abortController: AbortController;
 }
 
@@ -81,8 +88,8 @@ class DownloadManager {
     try {
       await this.downloadWithRetry(task.url, task.savePath, task.abortController.signal, task.onProgress);
       task.resolve();
-    } catch (error: any) {
-      if (error.name === 'AbortError') {
+    } catch (error) {
+      if (error instanceof Error && error.name === 'AbortError') {
         task.reject(new Error("Paused"));
       } else {
         task.reject(error);
@@ -100,7 +107,7 @@ class DownloadManager {
     signal: AbortSignal,
     onProgress?: ProgressCallback
   ): Promise<void> {
-    let lastError: any;
+    let lastError: unknown;
 
     for (let attempt = 1; attempt <= this.MAX_RETRIES; attempt++) {
       if (signal.aborted) throw new Error("AbortError");
@@ -108,9 +115,9 @@ class DownloadManager {
       try {
         await this.executeDownload(url, savePath, signal, onProgress);
         return;
-      } catch (error: any) {
+      } catch (error) {
         lastError = error;
-        if (error.name === 'AbortError' || error.message === 'Paused') {
+        if (error instanceof Error && (error.name === 'AbortError' || error.message === 'Paused')) {
           throw error;
         }
 
@@ -142,7 +149,7 @@ class DownloadManager {
       signal, // Pass the abort signal to axios
     });
 
-    const totalBytes = parseInt(response.headers["content-length"] || "0", 10);
+    const totalBytes = parseInt(String(response.headers["content-length"] ?? "0"), 10);
     let receivedBytes = 0;
 
     // Throttling Transform Stream
@@ -170,10 +177,10 @@ class DownloadManager {
     });
 
     return new Promise((resolve, reject) => {
-      const handleError = (err: any) => {
+      const handleError = (err: unknown) => {
         writer.close();
-        if (err.name === 'AbortError' || err.message === 'AbortError') {
-          reject({ name: 'AbortError' });
+        if (err instanceof Error && (err.name === 'AbortError' || err.message === 'AbortError')) {
+          reject(new AbortDownloadError());
         } else {
           fs.unlink(savePath, () => {});
           reject(err);
@@ -196,7 +203,7 @@ class DownloadManager {
       signal.addEventListener('abort', () => {
         response.data.destroy();
         writer.destroy();
-        handleError({ name: 'AbortError' });
+        handleError(new AbortDownloadError());
       });
     });
   }

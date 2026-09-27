@@ -1,5 +1,6 @@
 import axios from 'axios';
 import * as cheerio from 'cheerio';
+import type { Element } from 'domhandler';
 import { VideoSource } from '../SourceManager';
 import { SeriesMetadata, EpisodeMetadata } from '../../src/types/sources';
 
@@ -16,7 +17,7 @@ export class PublicDomainMovieSource implements VideoSource {
       
       const results: SeriesMetadata[] = [];
       
-      $('.movie-card').each((_: number, element: any) => {
+      $('.movie-card').each((_: number, element: Element) => {
         const title = $(element).find('.movie-title').text().trim();
         const link = $(element).find('a').attr('href');
         const thumbnail = $(element).find('img').attr('src');

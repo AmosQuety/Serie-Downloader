@@ -11,6 +11,7 @@ import Store from "electron-store";
 import { logInfo, logError } from "./logger";
 import { sourceManager } from "./SourceManager";
 import { playerManager } from "./PlayerManager";
+import { SeriesMetadata, EpisodeMetadata } from "../src/types/sources";
 
 // Initialize electron-store for persistings settings
 const store = new Store();
@@ -332,7 +333,7 @@ function setupIPCHandlers() {
       VALUES (?, ?, ?, ?, ?, ?, ?, 'pending')
     `);
 
-    const transaction = db.transaction((seriesData: any, episodesData: any[]) => {
+    const transaction = db.transaction((seriesData: SeriesMetadata, episodesData: EpisodeMetadata[]) => {
       insertSeries.run(
         seriesData.id,
         seriesData.title,

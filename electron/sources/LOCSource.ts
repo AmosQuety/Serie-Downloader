@@ -2,6 +2,11 @@ import axios from 'axios';
 import { VideoSource } from '../SourceManager';
 import { SeriesMetadata, EpisodeMetadata } from '../../src/types/sources';
 
+interface LocFile {
+  url?: string;
+  mimetype?: string;
+}
+
 export class LOCSource implements VideoSource {
   readonly id = 'loc-gov';
   readonly name = 'Library of Congress';
@@ -59,7 +64,7 @@ export class LOCSource implements VideoSource {
         const files = res.files || [];
         for (const fileGroup of files) {
           // Look for MP4 or high quality video
-          const videoFile = fileGroup.find((f: any) => f.url && (f.url.endsWith('.mp4') || f.url.endsWith('.mov') || f.mimetype?.includes('video/mp4')));
+          const videoFile = fileGroup.find((f: LocFile) => f.url && (f.url.endsWith('.mp4') || f.url.endsWith('.mov') || f.mimetype?.includes('video/mp4')));
           
           if (videoFile) {
             episodes.push({

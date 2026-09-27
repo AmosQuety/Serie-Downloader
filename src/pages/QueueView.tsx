@@ -1,13 +1,14 @@
 import React from "react";
 import { useDownloadStore, selectDownloads, selectUpdateDownload, selectRemoveDownload } from "../store/useDownloadStore";
 import { List, Pause, Play, Trash2, RotateCcw, AlertCircle, Loader2 } from "lucide-react";
+import { DownloadItem } from "../types";
 
 export const QueueView: React.FC = () => {
   const downloads = useDownloadStore(selectDownloads);
   const updateDownload = useDownloadStore(selectUpdateDownload);
   const removeDownload = useDownloadStore(selectRemoveDownload);
 
-  const handleRetry = (url: string, item: any) => {
+  const handleRetry = (url: string, item: DownloadItem) => {
     updateDownload(url, { status: 'pending', progress: 0, error: undefined });
     window.electronAPI.startDownload(url, item.savePath, {
       seriesTitle: item.metadata?.title || "Unknown",

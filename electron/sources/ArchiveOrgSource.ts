@@ -1,5 +1,6 @@
 import axios from 'axios';
 import * as cheerio from 'cheerio';
+import type { Element } from 'domhandler';
 import { VideoSource } from '../SourceManager';
 import { SeriesMetadata, EpisodeMetadata } from '../../src/types/sources';
 
@@ -18,7 +19,7 @@ export class ArchiveOrgSource implements VideoSource {
       
       const results: SeriesMetadata[] = [];
       
-      $('.item-ia').each((_: number, element: any) => {
+      $('.item-ia').each((_: number, element: Element) => {
         const title = $(element).find('.title').text().trim();
         const identifier = $(element).attr('data-id');
         const thumbnail = $(element).find('.item-img').attr('src') || $(element).find('img').attr('src');

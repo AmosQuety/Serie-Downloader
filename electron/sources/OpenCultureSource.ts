@@ -1,5 +1,6 @@
 import axios from 'axios';
 import * as cheerio from 'cheerio';
+import type { Element } from 'domhandler';
 import { VideoSource } from '../SourceManager';
 import { SeriesMetadata, EpisodeMetadata } from '../../src/types/sources';
 
@@ -18,7 +19,7 @@ export class OpenCultureSource implements VideoSource {
       
       const results: SeriesMetadata[] = [];
       
-      $('article').each((_: number, element: any) => {
+      $('article').each((_: number, element: Element) => {
         const title = $(element).find('h2 a').text().trim();
         const link = $(element).find('h2 a').attr('href');
         

@@ -1,23 +1,33 @@
+import type { PathMetadata } from '../../electron/pathUtils';
+import type {
+  DownloadCompleteMetadata,
+  DownloadRecord,
+  DownloadHistoryItem,
+  AppSettings,
+  UpdateReadyInfo,
+} from './index';
+import type { SeriesMetadata, EpisodeMetadata } from './sources';
+
 export interface ElectronAPI {
   // Download functions
-  startDownload: (url: string, savePath: string, metadata?: any) => Promise<{ success: boolean; message?: string; error?: string }>;
-  
+  startDownload: (url: string, savePath: string, metadata?: PathMetadata) => Promise<{ success: boolean; message?: string; error?: string }>;
+
   // Progress listeners
   onDownloadProgress: (callback: (data: { url: string; progress: number; savePath: string }) => void) => () => void;
-  onDownloadComplete: (callback: (data: { url: string; savePath: string; success: boolean; metadata: any }) => void) => () => void;
+  onDownloadComplete: (callback: (data: { url: string; savePath: string; success: boolean; metadata: DownloadCompleteMetadata }) => void) => () => void;
   onDownloadError: (callback: (data: { url: string; savePath: string; error: string }) => void) => () => void;
-  
+
   // Download controls
   pauseDownload: (url: string) => Promise<{ success: boolean; error?: string }>;
   cancelDownload: (url: string) => Promise<{ success: boolean; error?: string }>;
 
   // Database functions
-  getHistory: () => Promise<any[]>;
-  saveRecord: (record: any) => Promise<{ success: boolean; error?: string }>;
+  getHistory: () => Promise<DownloadHistoryItem[]>;
+  saveRecord: (record: DownloadRecord) => Promise<{ success: boolean; error?: string }>;
 
   // Settings & Configuration
-  getSettings: () => Promise<any>;
-  updateSettings: (key: string, value: any) => Promise<void>;
+  getSettings: () => Promise<AppSettings>;
+  updateSettings: (key: keyof AppSettings, value: string | number) => Promise<void>;
   selectDirectory: () => Promise<string | null>;
 
   // Dialogs
@@ -27,7 +37,7 @@ export interface ElectronAPI {
   removeAllDownloadListeners: () => void;
 
   // Bulk Database insertion
-  bulkInsertEpisodes: (data: { series: any, episodes: any[], sourceId: string }) => Promise<{ success: boolean; error?: string }>;
+  bulkInsertEpisodes: (data: { series: SeriesMetadata, episodes: EpisodeMetadata[], sourceId: string }) => Promise<{ success: boolean; error?: string }>;
 
   // Throttling
   setMaxSpeed: (speed: number) => Promise<void>;
@@ -38,12 +48,12 @@ export interface ElectronAPI {
   updatePlaybackPosition: (data: { filePath: string, position: number, duration: number }) => Promise<{ success: boolean }>;
 
   // Updates
-  onUpdateReady: (callback: (info: any) => void) => () => void;
+  onUpdateReady: (callback: (info: UpdateReadyInfo) => void) => () => void;
 
   // Source Search & Metadata
-  searchSources: (query: string) => Promise<any[]>;
-  getSeasonLinks: (sourceId: string, seriesId: string) => Promise<any[]>;
-  getEpisodes: (sourceId: string, seriesId: string, seasonNumber: number) => Promise<any[]>;
+  searchSources: (query: string) => Promise<{ sourceId: string; results: SeriesMetadata[] }[]>;
+  getSeasonLinks: (sourceId: string, seriesId: string) => Promise<{ number: number; url: string }[]>;
+  getEpisodes: (sourceId: string, seriesId: string, seasonNumber: number) => Promise<EpisodeMetadata[]>;
   getSourceDownloadUrl: (sourceId: string, episodeId: string) => Promise<string>;
 }
 

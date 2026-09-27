@@ -6,7 +6,9 @@ import { QueueView } from "./pages/QueueView";
 import { LibraryView } from "./pages/LibraryView";
 import { SettingsView } from "./pages/SettingsView";
 import { useDownloadStore } from "./store/useDownloadStore";
-import { ToastProvider, useToast } from "./components/ToastProvider";
+import { ToastProvider } from "./components/ToastProvider";
+import { useToast } from "./hooks/useToast";
+import { DownloadCompleteMetadata } from "./types";
 
 const AppContent: React.FC = () => {
   const { showToast } = useToast();
@@ -17,7 +19,7 @@ const AppContent: React.FC = () => {
       updateDownload(data.url, { progress: data.progress, status: "downloading" });
     };
 
-    const handleComplete = (data: { url: string; savePath: string; metadata: any }) => {
+    const handleComplete = (data: { url: string; savePath: string; metadata: DownloadCompleteMetadata }) => {
       updateDownload(data.url, { progress: 100, status: "completed" });
       showToast(`Finished: ${data.metadata?.title || "New episode"}`, "success");
       

@@ -1,5 +1,6 @@
 import axios from 'axios';
 import * as cheerio from 'cheerio';
+import type { Element } from 'domhandler';
 import { VideoSource } from '../SourceManager';
 import { SeriesMetadata, EpisodeMetadata } from '../../src/types/sources';
 
@@ -18,7 +19,7 @@ export class PrattArchiveSource implements VideoSource {
       const results: SeriesMetadata[] = [];
       
       // Selectors based on Digital Maryland/CONTENTdm structure
-      $('.item-container').each((_: number, element: any) => {
+      $('.item-container').each((_: number, element: Element) => {
         const title = $(element).find('.title-link').text().trim();
         const link = $(element).find('.title-link').attr('href');
         

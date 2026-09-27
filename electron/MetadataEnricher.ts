@@ -91,7 +91,7 @@ class MetadataEnricher {
         thumbnail: `https://image.tmdb.org/t/p/w500${data.poster_path}`,
         backdrop: `https://image.tmdb.org/t/p/original${data.backdrop_path}`,
         rating: data.vote_average?.toString() || 'N/A',
-        genres: data.genres?.map((g: any) => g.name) || [],
+        genres: data.genres?.map((g: { name: string }) => g.name) || [],
         releaseYear: (data.first_air_date || data.release_date || '').split('-')[0],
       };
     } catch (error) {

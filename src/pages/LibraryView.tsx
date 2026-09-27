@@ -1,23 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Folder, ExternalLink, Play, Trash2, Clock, Star } from "lucide-react";
 import { PosterSkeleton } from "../components/Skeleton";
-
-interface DownloadHistoryItem {
-  id: string;
-  url: string;
-  save_path: string;
-  status: string;
-  progress: number;
-  title: string | null;
-  season: number | null;
-  episode: number | null;
-  thumbnail: string | null;
-  backdrop: string | null;
-  genres: string | null; // stored as JSON string in SQLite
-  description: string | null;
-  rating: string | null;
-  created_at: string;
-}
+import { DownloadHistoryItem } from "../types";
 
 export const LibraryView: React.FC = () => {
   const [history, setHistory] = useState<DownloadHistoryItem[]>([]);

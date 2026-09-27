@@ -1,5 +1,6 @@
 import axios from 'axios';
 import * as cheerio from 'cheerio';
+import type { Element } from 'domhandler';
 import { VideoSource } from '../SourceManager';
 import { SeriesMetadata, EpisodeMetadata } from '../../src/types/sources';
 
@@ -16,7 +17,7 @@ export class NFBSource implements VideoSource {
       
       const results: SeriesMetadata[] = [];
       
-      $('.film-card').each((_: number, element: any) => {
+      $('.film-card').each((_: number, element: Element) => {
         const title = $(element).find('.film-card__title').text().trim();
         const link = $(element).find('a').attr('href');
         const thumbnail = $(element).find('img').attr('data-src') || $(element).find('img').attr('src');

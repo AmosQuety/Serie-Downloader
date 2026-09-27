@@ -1,8 +1,8 @@
-import React, { useState } from "react";
+import React, { useCallback, useState } from "react";
 import { Search as SearchIcon, Play, ChevronRight, Loader2, Info } from "lucide-react";
-import { SeriesMetadata, EpisodeMetadata } from "../types/sources";
+import { SeriesMetadata, EpisodeMetadata, SeasonMetadata } from "../types/sources";
 import { useDownloadStore, selectAddDownload } from "../store/useDownloadStore";
-import { useToast } from "../components/ToastProvider";
+import { useToast } from "../hooks/useToast";
 import { PosterSkeleton } from "../components/Skeleton";
 
 export const SearchView = () => {
@@ -22,30 +22,30 @@ export const SearchView = () => {
   const addDownloadStore = useDownloadStore(selectAddDownload);
   const { showToast } = useToast();
 
-  // Initial load: Fetch trending items
-  React.useEffect(() => {
-    if (isInitialLoad) {
-      handleSearch(null);
-      setIsInitialLoad(false);
-    }
-  }, [isInitialLoad]);
-
-  const handleSearch = async (e: React.FormEvent | null) => {
+  const handleSearch = useCallback(async (e: React.FormEvent | null) => {
     if (e) e.preventDefault();
-    
+
     setIsSearching(true);
     try {
       // If query is empty, focus on ArchiveOrg (as it has a better "browse" structure)
-      const query = searchQuery.trim() || "*"; 
+      const query = searchQuery.trim() || "*";
       const allSourceResults = await window.electronAPI.searchSources(query);
-      const flattened = allSourceResults.flatMap((r: any) => r.results);
+      const flattened = allSourceResults.flatMap((r) => r.results);
       setResults(flattened);
     } catch (error) {
       console.error("Search failed:", error);
     } finally {
       setIsSearching(false);
     }
-  };
+  }, [searchQuery]);
+
+  // Initial load: Fetch trending items
+  React.useEffect(() => {
+    if (isInitialLoad) {
+      handleSearch(null);
+      setIsInitialLoad(false);
+    }
+  }, [isInitialLoad, handleSearch]);
 
   const toggleEpisode = (id: string) => {
     const next = new Set(selectedEpisodes);
@@ -349,7 +349,7 @@ export const SearchView = () => {
               </div>
 
               <div className="space-y-6">
-                {selectedSeries.seasons.length > 0 ? selectedSeries.seasons.map((season: any) => (
+                {selectedSeries.seasons.length > 0 ? selectedSeries.seasons.map((season: SeasonMetadata) => (
                   <div key={season.number} className="bg-white border border-gray-100 rounded-2xl p-6 shadow-sm">
                     <div className="flex items-center justify-between mb-6">
                       <h2 className="text-2xl font-bold text-gray-900">Season {season.number}</h2>

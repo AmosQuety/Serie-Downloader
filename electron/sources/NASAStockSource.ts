@@ -2,6 +2,10 @@ import axios from 'axios';
 import { VideoSource } from '../SourceManager';
 import { SeriesMetadata, EpisodeMetadata } from '../../src/types/sources';
 
+interface NasaAsset {
+  href: string;
+}
+
 export class NASAStockSource implements VideoSource {
   readonly id = 'nasa-stock';
   readonly name = 'NASA / Public Stock';
@@ -52,8 +56,8 @@ export class NASAStockSource implements VideoSource {
       const items = response.data.collection.items || [];
       
       // Find the best quality MP4
-      const videoAsset = items.find((item: any) => item.href.endsWith('~orig.mp4')) || 
-                         items.find((item: any) => item.href.endsWith('.mp4'));
+      const videoAsset = items.find((item: NasaAsset) => item.href.endsWith('~orig.mp4')) ||
+                         items.find((item: NasaAsset) => item.href.endsWith('.mp4'));
       
       if (videoAsset) {
         return [{
