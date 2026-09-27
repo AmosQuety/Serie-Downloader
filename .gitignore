@@ -203,6 +203,10 @@ pids
 tmp/
 temp/
 
+# Leftover local test/scrape artifacts
+/downloaded_file.bin
+/posts.json
+
 # Database files (if using local databases)
 *.db
 *.db-journal
@@ -219,7 +223,6 @@ temp/
 *.key
 
 # Package manager specific files
-package-lock.json
 yarn.lock
 pnpm-lock.yaml
 
