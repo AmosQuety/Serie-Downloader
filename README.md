@@ -50,6 +50,13 @@ Launch the development environment:
 npm run electron:dev
 ```
 
+### Testing
+Run the Vitest suite (DownloadManager, SourceManager, scraper sources, metadata enrichment, and IPC handler logic):
+```bash
+npm run test        # single run
+npm run test:watch  # watch mode
+```
+
 ---
 
 ## 🏗️ Building for Production

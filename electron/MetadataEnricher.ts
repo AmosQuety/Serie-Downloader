@@ -11,7 +11,7 @@ export interface EnrichedMetadata {
   releaseYear?: string;
 }
 
-class MetadataEnricher {
+export class MetadataEnricher {
   private tmdbKey: string | undefined;
   private omdbKey: string | undefined;
   private queue: { title: string; type: 'movie' | 'tv'; callback: (data: EnrichedMetadata | null) => void }[] = [];
