@@ -21,21 +21,32 @@ export interface VideoSource {
   getDownloadUrl(episodeId: string): Promise<string>;
 }
 
+function createDefaultSources(): VideoSource[] {
+  return [
+    new ArchiveOrgSource(),
+    new LOCSource(),
+    new PublicDomainMovieSource(),
+    new YouTubeSource(),
+    new NFBSource(),
+    new NASAStockSource(),
+    new OpenCultureSource(),
+    new BritishCouncilSource(),
+    new VimeoCCSource(),
+    new PrattArchiveSource(),
+  ];
+}
+
 export class SourceManager {
   private sources: Map<string, VideoSource> = new Map();
 
-  constructor() {
-    // Register "The Big 10" sources
-    this.registerSource(new ArchiveOrgSource());
-    this.registerSource(new LOCSource());
-    this.registerSource(new PublicDomainMovieSource());
-    this.registerSource(new YouTubeSource());
-    this.registerSource(new NFBSource());
-    this.registerSource(new NASAStockSource());
-    this.registerSource(new OpenCultureSource());
-    this.registerSource(new BritishCouncilSource());
-    this.registerSource(new VimeoCCSource());
-    this.registerSource(new PrattArchiveSource());
+  /**
+   * Accepts an explicit source list so tests can inject fakes instead of
+   * hitting the real "Big 10" scrapers over the network.
+   */
+  constructor(sources: VideoSource[] = createDefaultSources()) {
+    for (const source of sources) {
+      this.registerSource(source);
+    }
   }
 
   registerSource(source: VideoSource) {
